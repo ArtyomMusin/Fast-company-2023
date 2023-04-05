@@ -2,21 +2,7 @@ import {useState, useEffect} from 'react';
 import Bookmark from "./Bookmark";
 import Quality from "./Quality";
 
-const User = ({data, deleteUser}) => {
-    const [state, setState] = useState({})
-
-    useEffect(() => {
-        setState(prevState => ({...prevState, bookmark: data.bookmark}))
-    }, [])
-
-    useEffect(() => {
-
-    }, [state.bookmark])
-
-    const bookmarkHandler = () => {
-        setState(prevState => ({...prevState, bookmark: !prevState.bookmark}))
-    }
-
+const User = ({data, deleteUser, bookmarkHandler}) => {
     return (
         <tr key={data?._id}>
             <td>{data?.name}</td>
@@ -29,7 +15,7 @@ const User = ({data, deleteUser}) => {
             <td>{data?.completedMeetings}</td>
             <td>{data?.rate}</td>
             <td>
-                <Bookmark isTrue={state.bookmark} handler={bookmarkHandler}/>
+                <Bookmark isTrue={data.bookmark} handler={() => bookmarkHandler(data._id)}/>
             </td>
             <td>
                 <button className='btn btn-danger' onClick={() => deleteUser(data)}>delete</button>
