@@ -10,12 +10,16 @@ const Pagination = ({ current, itemsCount, pageSize, handlePageChange }) => {
     }
 
     return countPages > 1 ? (
-        <nav aria-label="Page navigation example">
+        <nav
+            className="d-flex justify-content-center"
+            aria-label="Page navigation example"
+        >
             <ul className="pagination">
                 <li className={`page-item ${current === 1 ? 'disabled' : ''}`}>
                     <a
                         className="page-link"
                         onClick={() => handlePageChange(current - 1)}
+                        role="button"
                     >
                         Previous
                     </a>
@@ -30,6 +34,7 @@ const Pagination = ({ current, itemsCount, pageSize, handlePageChange }) => {
                         <a
                             className="page-link"
                             onClick={() => handlePageChange(page)}
+                            role="button"
                         >
                             {page}
                         </a>
@@ -43,13 +48,16 @@ const Pagination = ({ current, itemsCount, pageSize, handlePageChange }) => {
                     <a
                         className="page-link"
                         onClick={() => handlePageChange(current + 1)}
+                        role="button"
                     >
                         Next
                     </a>
                 </li>
             </ul>
         </nav>
-    ) : ''
+    ) : (
+        ''
+    )
 }
 
 Pagination.propTypes = {
