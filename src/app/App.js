@@ -4,7 +4,8 @@ import api from './api'
 
 const App = () => {
     const [state, setState] = useState({
-        users: {}
+        users: {},
+        dataLoaded: false
     })
 
     const getData = async() => {
@@ -21,7 +22,7 @@ const App = () => {
     }
 
     useEffect(() => {
-        getData()
+        void getData()
     }, [])
 
     const deleteUser = (deletedUser) => {
@@ -45,7 +46,7 @@ const App = () => {
 
     return (
         <div className="App" style={{ padding: '1rem' }}>
-            {state.users.length ? (
+            {state.dataLoaded ? (
                 <Users
                     allUsers={state.users}
                     deleteUser={deleteUser}

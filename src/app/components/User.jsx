@@ -18,7 +18,7 @@ const User = ({ data, deleteUser, bookmarkHandler }) => {
             </td>
             <td>{data?.profession?.name}</td>
             <td>{data?.completedMeetings}</td>
-            <td>{data?.rate}</td>
+            <td>{data?.rate} / 5</td>
             <td>
                 <Bookmark
                     isTrue={data.bookmark}

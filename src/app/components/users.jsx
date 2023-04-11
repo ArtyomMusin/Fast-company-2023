@@ -2,18 +2,19 @@ import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import api from '../api'
 import _ from 'lodash'
-import UsersTable from './UsersTable'
+import { ASC, DESC, BOOKMARK, NAME } from '../variables'
+import UsersTable from './common/UsersTable'
 import GroupList from './GroupList'
 import InputSearch from './InputSearch'
 import Pagination from './Pagination'
 import { paginate } from '../utils/paginate'
 import Preloader from './ui/preloader'
-import Button from './ui/button'
-import { ASC, DESC } from '../variables'
+import Button from './ui/Button'
 
 const Users = ({ allUsers, deleteUser, bookmarkHandler }) => {
-    const defaultSortParams = ['', DESC]
-    const pageSize = 2
+    const pageSize = 4
+    const defaultSortParams = [NAME, DESC]
+    const invertedSortParams = [BOOKMARK]
 
     const [professions, setProfessions] = useState({})
     const [users, setUsers] = useState([])
@@ -22,12 +23,11 @@ const Users = ({ allUsers, deleteUser, bookmarkHandler }) => {
     const [searchedUsersName, setSearchedUsersName] = useState('')
     const [sortParams, setSortParams] = useState(defaultSortParams)
     const [currentPage, setCurrentPage] = useState(1)
-    const [testObj, setTestObj] = useState({ a: 1 })
 
     // получаем профессии
     useEffect(() => {
         console.log('Исходная дата: ', allUsers)
-        getProfessions()
+        void getProfessions()
     }, [])
 
     const getProfessions = async() => {
@@ -49,9 +49,20 @@ const Users = ({ allUsers, deleteUser, bookmarkHandler }) => {
     }
 
     // фильтруем всех юзеров на нужных
+
+    // этот useEffect сортирует юзеров при их изменении (например добавление в закладки) и поиске
     useEffect(() => {
         refreshUsers()
-    }, [allUsers, filteredProfessionId, searchedUsersName])
+        handleSortUsers()
+    }, [allUsers, searchedUsersName])
+
+    // этот useEffect сортирует юзеров при изменении фильтрации
+    useEffect(() => {
+        refreshUsers()
+        if (sortParams[0] !== defaultSortParams[0]) {
+            setSortParams(defaultSortParams)
+        }
+    }, [filteredProfessionId])
 
     const filterUsers = (users) => {
         if (filteredProfessionId === null) {
@@ -64,16 +75,25 @@ const Users = ({ allUsers, deleteUser, bookmarkHandler }) => {
         if (!searchedUsersName) {
             return users
         }
-        return users.filter((user) => user.name.includes(searchedUsersName))
+        return users.filter((user) => user.name.toLowerCase().includes(searchedUsersName.trim().toLowerCase()))
     }
 
     const refreshUsers = () => {
         let users = filterUsers(allUsers)
         users = searchedUsers(users)
         setUsers(users)
-        if (sortParams[0] !== '') {
-            setSortParams(defaultSortParams)
+    }
+
+    // сортировка юзеров
+    useEffect(() => {
+        handleSortUsers()
+    }, [sortParams])
+
+    const handleSortUsers = () => {
+        if (!sortParams[0]) {
+            return
         }
+        setUsers(prevState => _.orderBy(prevState, sortParams[0], sortParams[1] === ASC ? DESC : ASC))
     }
 
     // пагинация
@@ -117,28 +137,6 @@ const Users = ({ allUsers, deleteUser, bookmarkHandler }) => {
         setCurrentPage(page)
     }
 
-    // обработчик сортировки юзеров
-    useEffect(() => {
-        handleSortUsers()
-    }, [sortParams])
-
-    const handleSortUsers = () => {
-        if (!sortParams[0]) {
-            return
-        }
-        setUsers(prevState => _.orderBy(prevState, sortParams[0], sortParams[1] === ASC ? DESC : ASC))
-    }
-
-    const setStateUserSort = (param) => {
-        setSortParams(prevState => {
-            let type = prevState[1]
-            if (prevState[0] === param) {
-                type = type === DESC ? ASC : DESC
-            }
-            return [param, type]
-        })
-    }
-
     // сброс фильтров
     const cancelFilters = () => {
         setFilteredProfessionId(null)
@@ -146,11 +144,13 @@ const Users = ({ allUsers, deleteUser, bookmarkHandler }) => {
     }
 
     return (
-        <div className="users">
+        <div className="users d-flex flex-column" style={{ width: 'fit-content' }}>
             {allUsers?.length ? (
-                <h1 className="badge bg-primary fs-3">{`${users?.length} человек с тобой тусанёт сегодня`}</h1>
+                <h1 className="badge bg-primary fs-3" style={{ width: 'fit-content' }}>
+                    {`${users?.length} человек с тобой тусанёт сегодня`}
+                </h1>
             ) : (
-                <h1 className="badge bg-danger fs-3">
+                <h1 className="badge bg-danger fs-3" style={{ width: 'fit-content' }}>
                     Никто с тобой не тусанёт
                 </h1>
             )}
@@ -162,7 +162,7 @@ const Users = ({ allUsers, deleteUser, bookmarkHandler }) => {
                             current={filteredProfessionId}
                             onSelect={handleSelectProfession}
                         />
-                        <Button value={'Сброс'} onClick={cancelFilters} />
+                        <Button value={'Сброс'} onClick={cancelFilters} className={'btn-secondary mt-1'} />
                     </div>
                 ) : allUsers?.length ? (
                     <Preloader />
@@ -172,7 +172,12 @@ const Users = ({ allUsers, deleteUser, bookmarkHandler }) => {
                 {allUsers.length ? (
                     <div className="d-flex flex-column">
                         <InputSearch value={searchedUsersName} placeholder={'Введите имя'} onChange={(e) => handleSearchProfession(e)} />
-                        <UsersTable users={usersOfCurrentPage} currentSort={sortParams} deleteUser={deleteUser} bookmarkHandler={bookmarkHandler} onSort={setStateUserSort} />
+                        <UsersTable
+                            users={usersOfCurrentPage}
+                            currentSort={sortParams}
+                            refreshSortState={setSortParams}
+                            {...{ deleteUser, bookmarkHandler, invertedSortParams }}
+                        />
                     </div>
                 ) : (
                     ''
@@ -181,10 +186,8 @@ const Users = ({ allUsers, deleteUser, bookmarkHandler }) => {
             <Pagination
                 current={currentPage}
                 itemsCount={users.length}
-                pageSize={pageSize}
-                handlePageChange={handlePageChange}
+                {...{ pageSize, handlePageChange }}
             />
-            <button onClick={() => setTestObj(prevState => ({ ...prevState, a: prevState.a + 1 }))}>{testObj.a}</button>
         </div>
     )
 }
