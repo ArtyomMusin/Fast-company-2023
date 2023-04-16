@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { ASC, DESC } from '../../variables'
 
-const TableHeader = ({ data, currentSort, refreshSortState, invertedSortParams }) => {
+const TableHeader = ({ columns, currentSort, refreshSortState, invertedSortParams }) => {
     const getIcon = (name) => {
         if (currentSort[0] !== name) {
             return
@@ -35,16 +35,16 @@ const TableHeader = ({ data, currentSort, refreshSortState, invertedSortParams }
     return (
         <thead>
             <tr>
-                {Object.keys(data).map(col => (
+                {Object.keys(columns).map(col => (
                     <th
                         key={col}
                         scope="col"
-                        {...data[col].path ? {
+                        {...columns[col].path ? {
                             role: 'button',
-                            onClick: () => handleSortUsersState(data[col].path)
+                            onClick: () => handleSortUsersState(columns[col].path)
                         } : ''}
                     >
-                        {data[col].name} {data[col].path ? getIcon(data[col].path) : ''}
+                        {columns[col].name} {columns[col].path ? getIcon(columns[col].path) : ''}
                     </th>
                 ))}
             </tr>
@@ -53,7 +53,7 @@ const TableHeader = ({ data, currentSort, refreshSortState, invertedSortParams }
 }
 
 TableHeader.propTypes = {
-    data: PropTypes.object.isRequired,
+    columns: PropTypes.object.isRequired,
     currentSort: PropTypes.array.isRequired,
     refreshSortState: PropTypes.func.isRequired,
     invertedSortParams: PropTypes.array

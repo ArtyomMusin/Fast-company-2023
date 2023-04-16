@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import PropTypes from 'prop-types'
 import api from '../api'
 import _ from 'lodash'
 import { ASC, DESC, BOOKMARK, NAME } from '../variables'
@@ -10,11 +9,15 @@ import Pagination from './Pagination'
 import { paginate } from '../utils/paginate'
 import Preloader from './ui/preloader'
 import Button from './ui/Button'
+import PagePreloader from './ui/pagePreloader'
 
-const Users = ({ allUsers, deleteUser, bookmarkHandler }) => {
+const UsersList = () => {
     const pageSize = 4
     const defaultSortParams = [NAME, DESC]
     const invertedSortParams = [BOOKMARK]
+
+    const [allUsers, setAllUsers] = useState([])
+    const [dataIsLoaded, setDataIsLoaded] = useState(false)
 
     const [professions, setProfessions] = useState({})
     const [users, setUsers] = useState([])
@@ -24,12 +27,24 @@ const Users = ({ allUsers, deleteUser, bookmarkHandler }) => {
     const [sortParams, setSortParams] = useState(defaultSortParams)
     const [currentPage, setCurrentPage] = useState(1)
 
-    // получаем профессии
+    // инициируем подгрузку данных
     useEffect(() => {
-        console.log('Исходная дата: ', allUsers)
         void getProfessions()
+        void getData()
     }, [])
 
+    // получаем пользователей
+    const getData = async() => {
+        try {
+            const data = await api.users.fetchAll()
+            setAllUsers(data)
+            setDataIsLoaded(true)
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    // получаем профессии
     const getProfessions = async() => {
         try {
             let professions = await api.professions.fetchAll()
@@ -49,14 +64,13 @@ const Users = ({ allUsers, deleteUser, bookmarkHandler }) => {
     }
 
     // фильтруем всех юзеров на нужных
-
     // этот useEffect сортирует юзеров при их изменении (например добавление в закладки) и поиске
     useEffect(() => {
         refreshUsers()
         handleSortUsers()
     }, [allUsers, searchedUsersName])
 
-    // этот useEffect сортирует юзеров при изменении фильтрации
+    // этот useEffect сортирует юзеров при изменении фильтра
     useEffect(() => {
         refreshUsers()
         if (sortParams[0] !== defaultSortParams[0]) {
@@ -87,7 +101,7 @@ const Users = ({ allUsers, deleteUser, bookmarkHandler }) => {
     // сортировка юзеров
     useEffect(() => {
         handleSortUsers()
-    }, [sortParams])
+    }, [sortParams, filteredProfessionId])
 
     const handleSortUsers = () => {
         if (!sortParams[0]) {
@@ -137,6 +151,19 @@ const Users = ({ allUsers, deleteUser, bookmarkHandler }) => {
         setCurrentPage(page)
     }
 
+    // обработчик добавления/удаления закладок
+    const bookmarkHandler = (id) => {
+        setAllUsers((prevState) => (
+            prevState.map((user) => user._id === id ? { ...user, bookmark: !user.bookmark } : user)
+        ))
+    }
+
+    // обработчик удаления пользователей
+    const deleteUser = (deletedUser) => {
+        const newUsersList = allUsers?.filter((user) => user._id !== deletedUser._id)
+        setAllUsers(() => (newUsersList))
+    }
+
     // сброс фильтров
     const cancelFilters = () => {
         setFilteredProfessionId(null)
@@ -144,58 +171,56 @@ const Users = ({ allUsers, deleteUser, bookmarkHandler }) => {
     }
 
     return (
-        <div className="users d-flex flex-column" style={{ width: 'fit-content' }}>
-            {allUsers?.length ? (
-                <h1 className="badge bg-primary fs-3" style={{ width: 'fit-content' }}>
-                    {`${users?.length} человек с тобой тусанёт сегодня`}
-                </h1>
-            ) : (
-                <h1 className="badge bg-danger fs-3" style={{ width: 'fit-content' }}>
-                    Никто с тобой не тусанёт
-                </h1>
-            )}
-            <div className="d-flex flex-direction-column gap-1">
-                {Object.keys(professions).length && allUsers?.length ? (
-                    <div className="d-flex flex-column">
-                        <GroupList
-                            data={professions}
-                            current={filteredProfessionId}
-                            onSelect={handleSelectProfession}
-                        />
-                        <Button value={'Сброс'} onClick={cancelFilters} className={'btn-secondary mt-1'} />
-                    </div>
-                ) : allUsers?.length ? (
-                    <Preloader />
+        dataIsLoaded ? (
+            <div className="users d-flex flex-column" style={{ width: 'fit-content' }}>
+                {allUsers?.length ? (
+                    <h1 className="badge bg-primary fs-3" style={{ width: 'fit-content' }}>
+                        {`${users?.length} человек с тобой тусанёт сегодня`}
+                    </h1>
                 ) : (
-                    ''
+                    <h1 className="badge bg-danger fs-3" style={{ width: 'fit-content' }}>
+                        Никто с тобой не тусанёт
+                    </h1>
                 )}
-                {allUsers.length ? (
-                    <div className="d-flex flex-column">
-                        <InputSearch value={searchedUsersName} placeholder={'Введите имя'} onChange={(e) => handleSearchProfession(e)} />
-                        <UsersTable
-                            users={usersOfCurrentPage}
-                            currentSort={sortParams}
-                            refreshSortState={setSortParams}
-                            {...{ deleteUser, bookmarkHandler, invertedSortParams }}
-                        />
-                    </div>
-                ) : (
-                    ''
-                )}
+                <div className="d-flex flex-direction-column gap-1">
+                    {Object.keys(professions).length && allUsers?.length ? (
+                        <div className="d-flex flex-column">
+                            <GroupList
+                                data={professions}
+                                current={filteredProfessionId}
+                                onSelect={handleSelectProfession}
+                            />
+                            <Button value={'Сброс'} onClick={cancelFilters} className={'btn-secondary mt-1'} />
+                        </div>
+                    ) : allUsers?.length ? (
+                        <Preloader />
+                    ) : (
+                        ''
+                    )}
+                    {allUsers.length ? (
+                        <div className="d-flex flex-column">
+                            <InputSearch value={searchedUsersName} placeholder={'Введите имя'} onChange={(e) => handleSearchProfession(e)} />
+                            <UsersTable
+                                users={usersOfCurrentPage}
+                                currentSort={sortParams}
+                                refreshSortState={setSortParams}
+                                {...{ deleteUser, bookmarkHandler, invertedSortParams }}
+                            />
+                        </div>
+                    ) : (
+                        ''
+                    )}
+                </div>
+                <Pagination
+                    current={currentPage}
+                    itemsCount={users.length}
+                    {...{ pageSize, handlePageChange }}
+                />
             </div>
-            <Pagination
-                current={currentPage}
-                itemsCount={users.length}
-                {...{ pageSize, handlePageChange }}
-            />
-        </div>
+        ) : (
+            <PagePreloader/>
+        )
     )
 }
 
-Users.propTypes = {
-    allUsers: PropTypes.array.isRequired,
-    deleteUser: PropTypes.func.isRequired,
-    bookmarkHandler: PropTypes.func.isRequired
-}
-
-export default Users
+export default UsersList

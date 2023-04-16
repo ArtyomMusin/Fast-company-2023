@@ -1,17 +1,29 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import User from '../User'
+import _ from 'lodash'
 
-const TableBody = ({ users, deleteUser, bookmarkHandler }) => {
+const TableBody = ({ data, columns, messageForEmptyTable }) => {
+    const renderContent = (item, column) => {
+        if (column.component) {
+            if (typeof column.component === 'function') {
+                return column.component(item)
+            }
+            return column.component
+        }
+        return _.get(item, column.path)
+    }
+
     return (
         <tbody>
-            {users.length ? (
-                users.map((user) => (
-                    <User
-                        key={`user_${user._id}`}
-                        data={user}
-                        {...{ deleteUser, bookmarkHandler }}
-                    />
+            {data.length ? (
+                data.map(item => (
+                    <tr key={item._id}>
+                        {Object.keys(columns).map(col => (
+                            <td key={`${col}_${item._id}`}>
+                                {renderContent(item, columns[col])}
+                            </td>
+                        ))}
+                    </tr>
                 ))
             ) : (
                 <tr>
@@ -19,7 +31,7 @@ const TableBody = ({ users, deleteUser, bookmarkHandler }) => {
                         colSpan="7"
                         style={{ textAlign: 'center' }}
                     >
-                        Нет таких пользователей
+                        { messageForEmptyTable }
                     </td>
                 </tr>
             )}
@@ -27,10 +39,14 @@ const TableBody = ({ users, deleteUser, bookmarkHandler }) => {
     )
 }
 
+TableBody.defaultProps = {
+    messageForEmptyTable: 'Нет данных'
+}
+
 TableBody.propTypes = {
-    users: PropTypes.oneOfType([PropTypes.array, PropTypes.object]).isRequired,
-    deleteUser: PropTypes.func.isRequired,
-    bookmarkHandler: PropTypes.func.isRequired
+    data: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
+    columns: PropTypes.object.isRequired,
+    messageForEmptyTable: PropTypes.string
 }
 
 export default TableBody

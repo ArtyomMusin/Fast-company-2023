@@ -1,17 +1,18 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import TableHeader from './TableHeader'
-// import TableBody from './TableBody'
+import { Link } from 'react-router-dom'
 import { BOOKMARK, COMPLETED_MEETINGS, NAME, PROFESSION_NAME, RATE } from '../../variables'
-import TableBody2 from './TableBody2'
+import Table from './Table'
+import TableHeader from './TableHeader'
+import TableBody from './TableBody'
 import Bookmark from '../Bookmark'
 import Button from '../ui/Button'
 import QualitiesList from '../QualitiesList'
 
 const UsersTable = ({ users, currentSort, deleteUser, bookmarkHandler, refreshSortState, invertedSortParams }) => {
     const columns = {
-        name: { name: 'Имя', path: NAME },
-        qualities: { name: 'Качества', component: (data) => <QualitiesList {...{ data }} /> },
+        name: { name: 'Имя', path: NAME, component: (data) => <Link to={`/users/${data._id}`}>{data[NAME]}</Link> },
+        qualities: { name: 'Качества', component: (data) => <QualitiesList {...{ data: data.qualities }} /> },
         profession: { name: 'Профессии', path: PROFESSION_NAME },
         completedMeetings: { name: 'Встретился, раз', path: COMPLETED_MEETINGS },
         rate: { name: 'Оценка', path: RATE },
@@ -20,11 +21,10 @@ const UsersTable = ({ users, currentSort, deleteUser, bookmarkHandler, refreshSo
     }
 
     return (
-        <table className="table">
-            <TableHeader {...{ data: columns, currentSort, invertedSortParams, refreshSortState }} />
-            {/* <TableBody {...{ users, deleteUser, bookmarkHandler }} /> */}
-            <TableBody2 {...{ columns, data: users }}/>
-        </table>
+        <Table>
+            <TableHeader {...{ columns, currentSort, invertedSortParams, refreshSortState }} />
+            <TableBody {...{ data: users, columns }}/>
+        </Table>
     )
 }
 
