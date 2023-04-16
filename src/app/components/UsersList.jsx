@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import api from '../api'
 import _ from 'lodash'
-import { ASC, DESC, BOOKMARK, NAME } from '../variables'
+import { ASC, DESC, BOOKMARK, NAME, USERS_SEARCH, USERS_PROFESSION } from '../variables'
 import UsersTable from './common/UsersTable'
 import GroupList from './GroupList'
 import InputSearch from './InputSearch'
@@ -13,6 +13,9 @@ import PagePreloader from './ui/pagePreloader'
 
 const UsersList = () => {
     const pageSize = 4
+    const defaultFilteredProfessionId = null
+    const defaultSearchedUsersName = ''
+    const defaultCurrentFilter = null
     const defaultSortParams = [NAME, DESC]
     const invertedSortParams = [BOOKMARK]
 
@@ -22,8 +25,9 @@ const UsersList = () => {
     const [professions, setProfessions] = useState({})
     const [users, setUsers] = useState([])
     const [usersOfCurrentPage, setUsersOfCurrentPage] = useState([])
-    const [filteredProfessionId, setFilteredProfessionId] = useState(null)
-    const [searchedUsersName, setSearchedUsersName] = useState('')
+    const [filteredProfessionId, setFilteredProfessionId] = useState(defaultFilteredProfessionId)
+    const [searchedUsersName, setSearchedUsersName] = useState(defaultSearchedUsersName)
+    const [currentFilter, setCurrentFilter] = useState(defaultCurrentFilter)
     const [sortParams, setSortParams] = useState(defaultSortParams)
     const [currentPage, setCurrentPage] = useState(1)
 
@@ -64,50 +68,66 @@ const UsersList = () => {
     }
 
     // фильтруем всех юзеров на нужных
-    // этот useEffect сортирует юзеров при их изменении (например добавление в закладки) и поиске
+    // этот useEffect сортирует юзеров при обновлении всех юзеров, их изменении (например добавление в закладки) и поиске
     useEffect(() => {
-        refreshUsers()
+        searchUsers(allUsers)
         handleSortUsers()
-    }, [allUsers, searchedUsersName])
+    }, [allUsers])
 
     // этот useEffect сортирует юзеров при изменении фильтра
     useEffect(() => {
-        refreshUsers()
-        if (sortParams[0] !== defaultSortParams[0]) {
-            setSortParams(defaultSortParams)
+        if (currentFilter !== USERS_PROFESSION) {
+            return
         }
+        setSearchedUsersName(defaultSearchedUsersName)
+        filterUsers(allUsers)
+        clearSort()
     }, [filteredProfessionId])
 
-    const filterUsers = (users) => {
-        if (filteredProfessionId === null) {
-            return users
+    const filterUsers = (data) => {
+        let users = data
+        setCurrentFilter(defaultCurrentFilter)
+        if (filteredProfessionId !== defaultFilteredProfessionId) {
+            users = users.filter(user => user.profession._id === filteredProfessionId)
+            setCurrentFilter(USERS_PROFESSION)
         }
-        return users.filter(user => user.profession._id === filteredProfessionId)
+        setUsers(users)
     }
 
-    const searchedUsers = (users) => {
-        if (!searchedUsersName) {
-            return users
+    // строка поиска
+    useEffect(() => {
+        if (currentFilter !== USERS_SEARCH) {
+            return
         }
-        return users.filter((user) => user.name.toLowerCase().includes(searchedUsersName.trim().toLowerCase()))
-    }
+        setFilteredProfessionId(defaultFilteredProfessionId)
+        searchUsers(allUsers)
+        handleSortUsers()
+    }, [searchedUsersName])
 
-    const refreshUsers = () => {
-        let users = filterUsers(allUsers)
-        users = searchedUsers(users)
+    const searchUsers = (data) => {
+        let users = data
+        setCurrentFilter(defaultCurrentFilter)
+        if (searchedUsersName) {
+            users = users.filter((user) => user.name.toLowerCase().includes(searchedUsersName.trim().toLowerCase()))
+            setCurrentFilter(USERS_SEARCH)
+        }
         setUsers(users)
     }
 
     // сортировка юзеров
     useEffect(() => {
         handleSortUsers()
-    }, [sortParams, filteredProfessionId])
+    }, [sortParams])
 
     const handleSortUsers = () => {
         if (!sortParams[0]) {
             return
         }
         setUsers(prevState => _.orderBy(prevState, sortParams[0], sortParams[1] === ASC ? DESC : ASC))
+    }
+
+    const clearSort = () => {
+        setSortParams(defaultSortParams)
     }
 
     // пагинация
@@ -136,6 +156,7 @@ const UsersList = () => {
     // обработчик выбора профессии
     const handleSelectProfession = (id) => {
         setFilteredProfessionId(id)
+        setCurrentFilter(USERS_PROFESSION)
         setCurrentPage(1)
     }
 
@@ -143,6 +164,8 @@ const UsersList = () => {
     const handleSearchProfession = (e) => {
         const userName = e.target.value
         setSearchedUsersName(userName)
+        setCurrentFilter(USERS_SEARCH)
+
         setCurrentPage(1)
     }
 
