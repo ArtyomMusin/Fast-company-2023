@@ -11,10 +11,11 @@ module.exports = {
     },
     plugins: ['react'],
     rules: {
-        indent: ['error', 4],
+        indent: ['error', 4, { SwitchCase: 1 }],
         semi: ['error', 'never'],
         'space-before-function-paren': ['error', 'never'],
         quotes: ['error', 'single', { allowTemplateLiterals: true }],
-        'multiline-ternary': ['error', 'never']
+        'multiline-ternary': ['error', 'never'],
+        'no-void': ['error', { allowAsStatement: true }]
     }
 }
