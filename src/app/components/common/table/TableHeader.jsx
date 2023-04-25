@@ -1,15 +1,20 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { ASC, DESC } from '../../variables'
+import { ASC, DESC } from '../../../variables'
 
-const TableHeader = ({ columns, currentSort, refreshSortState, invertedSortParams }) => {
+const TableHeader = ({
+    columns,
+    currentSort,
+    refreshSortState,
+    invertedSortParams
+}) => {
     const getIcon = (name) => {
         if (currentSort[0] !== name) {
             return
         }
 
         let direction = currentSort[1] === ASC ? 'down' : 'up'
-        invertedSortParams?.forEach(item => {
+        invertedSortParams?.forEach((item) => {
             if (currentSort[0] === item) {
                 direction = currentSort[1] === DESC ? 'down' : 'up'
             }
@@ -20,9 +25,9 @@ const TableHeader = ({ columns, currentSort, refreshSortState, invertedSortParam
 
     // обработчик состояния сортировки
     const handleSortUsersState = (param) => {
-        refreshSortState(prevState => {
+        refreshSortState((prevState) => {
             let type = DESC
-            invertedSortParams?.forEach(item => {
+            invertedSortParams?.forEach((item) => {
                 type = param === item ? ASC : DESC
             })
             if (prevState[0] === param) {
@@ -35,16 +40,14 @@ const TableHeader = ({ columns, currentSort, refreshSortState, invertedSortParam
     return (
         <thead>
             <tr>
-                {Object.keys(columns).map(col => (
+                {Object.keys(columns).map((col) => (
                     <th
                         key={col}
                         scope="col"
-                        {...columns[col].path ? {
-                            role: 'button',
-                            onClick: () => handleSortUsersState(columns[col].path)
-                        } : ''}
+                        {...(columns[col].path ? { role: 'button', onClick: () => handleSortUsersState(columns[col].path) } : '')}
                     >
-                        {columns[col].name} {columns[col].path ? getIcon(columns[col].path) : ''}
+                        {columns[col].name}{' '}
+                        {columns[col].path ? getIcon(columns[col].path) : ''}
                     </th>
                 ))}
             </tr>

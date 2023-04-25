@@ -1,21 +1,29 @@
 import React, { useEffect, useState } from 'react'
-import api from '../api'
+import api from '../../../api'
 import _ from 'lodash'
-import { ASC, DESC, BOOKMARK, NAME, USERS_SEARCH, USERS_PROFESSION } from '../variables'
-import UsersTable from './common/UsersTable'
-import GroupList from './GroupList'
-import InputSearch from './InputSearch'
-import Pagination from './Pagination'
-import { paginate } from '../utils/paginate'
-import Preloader from './ui/preloader'
-import Button from './ui/Button'
-import PagePreloader from './ui/pagePreloader'
+import {
+    ASC,
+    DESC,
+    BOOKMARK,
+    NAME,
+    USERS_SEARCH,
+    USERS_PROFESSION
+} from '../../../variables'
+import SearchStatus from '../../ui/SearchStatus'
+import UsersTable from '../../ui/UsersTable'
+import GroupList from '../../common/GroupList'
+import InputSearch from '../../common/InputSearch'
+import Pagination from '../../common/Pagination'
+import { paginate } from '../../../utils/paginate'
+import Preloader from '../../common/preloader'
+import Button from '../../common/Button'
+import PagePreloader from '../../common/pagePreloader'
 
-const UsersList = () => {
+const UsersListPage = () => {
     const pageSize = 4
     const defaultFilteredProfessionId = null
     const defaultSearchedUsersName = ''
-    const defaultCurrentFilter = null
+    const defaultCurrentFilter = USERS_PROFESSION
     const defaultSortParams = [NAME, DESC]
     const invertedSortParams = [BOOKMARK]
 
@@ -25,8 +33,12 @@ const UsersList = () => {
     const [professions, setProfessions] = useState({})
     const [users, setUsers] = useState([])
     const [usersOfCurrentPage, setUsersOfCurrentPage] = useState([])
-    const [filteredProfessionId, setFilteredProfessionId] = useState(defaultFilteredProfessionId)
-    const [searchedUsersName, setSearchedUsersName] = useState(defaultSearchedUsersName)
+    const [filteredProfessionId, setFilteredProfessionId] = useState(
+        defaultFilteredProfessionId
+    )
+    const [searchedUsersName, setSearchedUsersName] = useState(
+        defaultSearchedUsersName
+    )
     const [currentFilter, setCurrentFilter] = useState(defaultCurrentFilter)
     const [sortParams, setSortParams] = useState(defaultSortParams)
     const [currentPage, setCurrentPage] = useState(1)
@@ -52,7 +64,7 @@ const UsersList = () => {
     const getProfessions = async() => {
         try {
             let professions = await api.professions.fetchAll()
-            const all = { _id: null, name: 'Все' }
+            const all = { all: { _id: null, name: 'Все' } }
             // добавляем "все"
             if (Array.isArray(professions)) {
                 if (professions[0]._id !== null) {
@@ -70,26 +82,32 @@ const UsersList = () => {
     // фильтруем всех юзеров на нужных
     // этот useEffect сортирует юзеров при обновлении всех юзеров, их изменении (например добавление в закладки) и поиске
     useEffect(() => {
-        searchUsers(allUsers)
+        if (searchedUsersName !== defaultSearchedUsersName) {
+            searchUsers(allUsers)
+        }
+        filterUsers(allUsers)
         handleSortUsers()
     }, [allUsers])
 
     // этот useEffect сортирует юзеров при изменении фильтра
     useEffect(() => {
-        if (currentFilter !== USERS_PROFESSION) {
-            return
-        }
-        setSearchedUsersName(defaultSearchedUsersName)
         filterUsers(allUsers)
-        clearSort()
     }, [filteredProfessionId])
 
     const filterUsers = (data) => {
+        if (currentFilter !== USERS_PROFESSION) {
+            return
+        }
         let users = data
-        setCurrentFilter(defaultCurrentFilter)
         if (filteredProfessionId !== defaultFilteredProfessionId) {
-            users = users.filter(user => user.profession._id === filteredProfessionId)
+            users = users.filter(
+                (user) => user.profession._id === filteredProfessionId
+            )
             setCurrentFilter(USERS_PROFESSION)
+            setSearchedUsersName(defaultSearchedUsersName)
+            clearSort()
+        } else {
+            setCurrentFilter(defaultCurrentFilter)
         }
         setUsers(users)
     }
@@ -106,10 +124,15 @@ const UsersList = () => {
 
     const searchUsers = (data) => {
         let users = data
-        setCurrentFilter(defaultCurrentFilter)
         if (searchedUsersName) {
-            users = users.filter((user) => user.name.toLowerCase().includes(searchedUsersName.trim().toLowerCase()))
+            users = users.filter((user) =>
+                user.name
+                    .toLowerCase()
+                    .includes(searchedUsersName.trim().toLowerCase())
+            )
             setCurrentFilter(USERS_SEARCH)
+        } else {
+            setCurrentFilter(defaultCurrentFilter)
         }
         setUsers(users)
     }
@@ -123,7 +146,13 @@ const UsersList = () => {
         if (!sortParams[0]) {
             return
         }
-        setUsers(prevState => _.orderBy(prevState, sortParams[0], sortParams[1] === ASC ? DESC : ASC))
+        setUsers((prevState) =>
+            _.orderBy(
+                prevState,
+                sortParams[0],
+                sortParams[1] === ASC ? DESC : ASC
+            )
+        )
     }
 
     const clearSort = () => {
@@ -145,9 +174,10 @@ const UsersList = () => {
     }, [users])
 
     const checkLastPageIsNotEmpty = () => {
-        const currentPageIsNotEmpty = Math.ceil(users.length / pageSize) < currentPage && currentPage > 1
+        const currentPageIsNotEmpty =
+            Math.ceil(users.length / pageSize) < currentPage && currentPage > 1
         if (currentPageIsNotEmpty) {
-            setCurrentPage(prevState => prevState - 1)
+            setCurrentPage((prevState) => prevState - 1)
             return
         }
         setUsersPagination(currentPage)
@@ -176,15 +206,19 @@ const UsersList = () => {
 
     // обработчик добавления/удаления закладок
     const bookmarkHandler = (id) => {
-        setAllUsers((prevState) => (
-            prevState.map((user) => user._id === id ? { ...user, bookmark: !user.bookmark } : user)
-        ))
+        setAllUsers((prevState) =>
+            prevState.map((user) =>
+                user._id === id ? { ...user, bookmark: !user.bookmark } : user
+            )
+        )
     }
 
     // обработчик удаления пользователей
     const deleteUser = (deletedUser) => {
-        const newUsersList = allUsers?.filter((user) => user._id !== deletedUser._id)
-        setAllUsers(() => (newUsersList))
+        const newUsersList = allUsers?.filter(
+            (user) => user._id !== deletedUser._id
+        )
+        setAllUsers(() => newUsersList)
     }
 
     // сброс фильтров
@@ -193,57 +227,62 @@ const UsersList = () => {
         setSearchedUsersName('')
     }
 
-    return (
-        dataIsLoaded ? (
-            <div className="users d-flex flex-column" style={{ width: 'fit-content' }}>
-                {allUsers?.length ? (
-                    <h1 className="badge bg-primary fs-3" style={{ width: 'fit-content' }}>
-                        {`${users?.length} человек с тобой тусанёт сегодня`}
-                    </h1>
+    return dataIsLoaded ? (
+        <div
+            className="users d-flex flex-column"
+            style={{ width: 'fit-content' }}
+        >
+            <SearchStatus length={users?.length} />
+            <div className="d-flex flex-direction-column gap-1">
+                {Object.keys(professions).length && allUsers?.length ? (
+                    <div className="d-flex flex-column">
+                        <GroupList
+                            data={professions}
+                            current={filteredProfessionId}
+                            onSelect={handleSelectProfession}
+                        />
+                        <Button
+                            value={'Сброс'}
+                            onClick={cancelFilters}
+                            className={'btn-secondary mt-1'}
+                        />
+                    </div>
+                ) : allUsers?.length ? (
+                    <Preloader />
                 ) : (
-                    <h1 className="badge bg-danger fs-3" style={{ width: 'fit-content' }}>
-                        Никто с тобой не тусанёт
-                    </h1>
+                    ''
                 )}
-                <div className="d-flex flex-direction-column gap-1">
-                    {Object.keys(professions).length && allUsers?.length ? (
-                        <div className="d-flex flex-column">
-                            <GroupList
-                                data={professions}
-                                current={filteredProfessionId}
-                                onSelect={handleSelectProfession}
-                            />
-                            <Button value={'Сброс'} onClick={cancelFilters} className={'btn-secondary mt-1'} />
-                        </div>
-                    ) : allUsers?.length ? (
-                        <Preloader />
-                    ) : (
-                        ''
-                    )}
-                    {allUsers.length ? (
-                        <div className="d-flex flex-column">
-                            <InputSearch value={searchedUsersName} placeholder={'Введите имя'} onChange={(e) => handleSearchProfession(e)} />
-                            <UsersTable
-                                users={usersOfCurrentPage}
-                                currentSort={sortParams}
-                                refreshSortState={setSortParams}
-                                {...{ deleteUser, bookmarkHandler, invertedSortParams }}
-                            />
-                        </div>
-                    ) : (
-                        ''
-                    )}
-                </div>
-                <Pagination
-                    current={currentPage}
-                    itemsCount={users.length}
-                    {...{ pageSize, handlePageChange }}
-                />
+                {allUsers.length ? (
+                    <div className="d-flex flex-column">
+                        <InputSearch
+                            value={searchedUsersName}
+                            placeholder={'Введите имя'}
+                            onChange={(e) => handleSearchProfession(e)}
+                        />
+                        <UsersTable
+                            users={usersOfCurrentPage}
+                            currentSort={sortParams}
+                            refreshSortState={setSortParams}
+                            {...{
+                                deleteUser,
+                                bookmarkHandler,
+                                invertedSortParams
+                            }}
+                        />
+                    </div>
+                ) : (
+                    ''
+                )}
             </div>
-        ) : (
-            <PagePreloader/>
-        )
+            <Pagination
+                current={currentPage}
+                itemsCount={users.length}
+                {...{ pageSize, handlePageChange }}
+            />
+        </div>
+    ) : (
+        <PagePreloader />
     )
 }
 
-export default UsersList
+export default UsersListPage

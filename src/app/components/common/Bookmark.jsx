@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import Button from './ui/Button'
+import Button from './Button'
 
 const Bookmark = ({ isTrue, handler }) => {
     const value = isTrue ? (
@@ -8,9 +8,7 @@ const Bookmark = ({ isTrue, handler }) => {
     ) : (
         <i className="bi bi-bookmark"></i>
     )
-    return (
-        <Button value={value} onClick={handler} className={'btn-success'} />
-    )
+    return <Button value={value} onClick={handler} className={'btn-success'} />
 }
 
 Bookmark.propTypes = {

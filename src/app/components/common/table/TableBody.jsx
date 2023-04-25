@@ -16,9 +16,9 @@ const TableBody = ({ data, columns, messageForEmptyTable }) => {
     return (
         <tbody>
             {data.length ? (
-                data.map(item => (
+                data.map((item) => (
                     <tr key={item._id}>
-                        {Object.keys(columns).map(col => (
+                        {Object.keys(columns).map((col) => (
                             <td key={`${col}_${item._id}`}>
                                 {renderContent(item, columns[col])}
                             </td>
@@ -27,11 +27,8 @@ const TableBody = ({ data, columns, messageForEmptyTable }) => {
                 ))
             ) : (
                 <tr>
-                    <td
-                        colSpan="7"
-                        style={{ textAlign: 'center' }}
-                    >
-                        { messageForEmptyTable }
+                    <td colSpan={Object.keys(columns).length} style={{ textAlign: 'center' }}>
+                        {messageForEmptyTable}
                     </td>
                 </tr>
             )}

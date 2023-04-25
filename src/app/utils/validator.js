@@ -4,7 +4,15 @@ export default function validator(data, config) {
         let isNotValid
         switch (method) {
             case 'isRequired':
-                isNotValid = dataField.trim() === ''
+                if (typeof dataField === 'boolean') {
+                    isNotValid = !dataField
+                    break
+                }
+                if (typeof dataField !== 'object') {
+                    isNotValid = !dataField.trim()
+                } else {
+                    isNotValid = !Object.keys(dataField).length
+                }
                 break
             case 'isEmail': {
                 const emailRegExp = /^\S+@\S+\.\S+$/g
@@ -34,7 +42,11 @@ export default function validator(data, config) {
     }
     for (const field in data) {
         for (const validateMethod in config[field]) {
-            const error = validate(data[field], validateMethod, config[field][validateMethod])
+            const error = validate(
+                data[field],
+                validateMethod,
+                config[field][validateMethod]
+            )
             if (error && !errors[field]) {
                 errors[field] = error
             }

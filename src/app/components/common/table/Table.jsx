@@ -3,15 +3,29 @@ import PropTypes from 'prop-types'
 import TableHeader from './TableHeader'
 import TableBody from './TableBody'
 
-const Table = ({ data, currentSort, invertedSortParams, refreshSortState, columns, children }) => {
+const Table = ({
+    data,
+    currentSort,
+    invertedSortParams,
+    refreshSortState,
+    columns,
+    children
+}) => {
     return (
         <table className="table">
-            { children || (
+            {children || (
                 <>
-                    <TableHeader {...{ columns, currentSort, invertedSortParams, refreshSortState }} />
-                    <TableBody {...{ columns, data }}/>
+                    <TableHeader
+                        {...{
+                            columns,
+                            currentSort,
+                            invertedSortParams,
+                            refreshSortState
+                        }}
+                    />
+                    <TableBody {...{ columns, data }} />
                 </>
-            ) }
+            )}
         </table>
     )
 }
