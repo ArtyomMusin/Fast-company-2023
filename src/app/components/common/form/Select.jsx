@@ -1,12 +1,18 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-const Select = ({ data, defaultValue, label, name, onChange, error }) => {
+const Select = ({ data, value, label, name, onChange, error }) => {
     const isDataLoaded = Boolean(Object.keys(data).length)
 
     const handler = (e) => {
         if (!e.target.name) return
-        onChange({ [name]: data[Object.keys(data).find(item => data[item]._id === e.target.value)] })
+        onChange({
+            [name]: data[
+                Object.keys(data).find(
+                    (item) => data[item]._id === e.target.value
+                )
+            ]
+        })
     }
 
     return (
@@ -17,7 +23,7 @@ const Select = ({ data, defaultValue, label, name, onChange, error }) => {
                     className={`form-select ${error ? 'is-invalid' : ''}`}
                     id={name}
                     required
-                    value={isDataLoaded ? defaultValue._id : ''}
+                    value={isDataLoaded && value ? value : ''}
                     name={name}
                     onChange={(e) => handler(e)}
                 >
@@ -33,7 +39,11 @@ const Select = ({ data, defaultValue, label, name, onChange, error }) => {
                                 {data[key].name}
                             </option>
                         ))
-                    ) : ('')}
+                    ) : (
+                        <option value="" disabled>
+                            Загрузка данных...
+                        </option>
+                    )}
                 </select>
                 {error ? <p className="invalid-feedback">{error}</p> : ''}
             </div>
@@ -43,15 +53,15 @@ const Select = ({ data, defaultValue, label, name, onChange, error }) => {
 
 Select.defaultProps = {
     data: {},
-    defaultValue: {}
+    value: {}
 }
 
 Select.propTypes = {
     data: PropTypes.oneOfType([PropTypes.array, PropTypes.object]).isRequired,
-    defaultValue: PropTypes.object,
-    label: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired,
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    label: PropTypes.string,
     error: PropTypes.string
 }
 

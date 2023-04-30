@@ -44,7 +44,10 @@ const TableHeader = ({
                     <th
                         key={col}
                         scope="col"
-                        {...(columns[col].path ? { role: 'button', onClick: () => handleSortUsersState(columns[col].path) } : '')}
+                        {...(columns[col].path ? ({
+                            role: 'button',
+                            onClick: () => handleSortUsersState(columns[col].path)
+                        }) : '')}
                     >
                         {columns[col].name}{' '}
                         {columns[col].path ? getIcon(columns[col].path) : ''}

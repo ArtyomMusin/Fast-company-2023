@@ -5,13 +5,13 @@ const SearchStatus = ({ length }) => {
     const getMessage = () => {
         switch (length) {
             case 0:
-                return 'Никто с тобой не тусанёт'
+                return 'The list is empty'
             case 2:
             case 3:
             case 4:
-                return 'человека с тобой тусанёт сегодня'
+                return 'people available for you'
             default:
-                return 'человек с тобой тусанёт сегодня'
+                return 'people available for you'
         }
     }
     return length > 0 ? (

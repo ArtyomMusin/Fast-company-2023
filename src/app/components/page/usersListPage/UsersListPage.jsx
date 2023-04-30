@@ -64,7 +64,7 @@ const UsersListPage = () => {
     const getProfessions = async() => {
         try {
             let professions = await api.professions.fetchAll()
-            const all = { all: { _id: null, name: 'Все' } }
+            const all = { all: { _id: null, name: 'All' } }
             // добавляем "все"
             if (Array.isArray(professions)) {
                 if (professions[0]._id !== null) {
@@ -242,9 +242,9 @@ const UsersListPage = () => {
                             onSelect={handleSelectProfession}
                         />
                         <Button
-                            value={'Сброс'}
+                            value={'Cancel'}
                             onClick={cancelFilters}
-                            className={'btn-secondary mt-1'}
+                            className={'btn btn-secondary mt-1'}
                         />
                     </div>
                 ) : allUsers?.length ? (

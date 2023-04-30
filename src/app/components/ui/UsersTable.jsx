@@ -24,24 +24,24 @@ const UsersTable = ({
 }) => {
     const columns = {
         name: {
-            name: 'Имя',
+            name: 'Name',
             path: NAME,
             component: (data) => (
                 <Link to={`${USERS}/${data._id}`}>{data[NAME]}</Link>
             )
         },
         qualities: {
-            name: 'Качества',
+            name: 'Qualities',
             component: (data) => <Qualities {...{ data: data.qualities }} />
         },
-        profession: { name: 'Профессии', path: PROFESSION_NAME },
+        profession: { name: 'Profession', path: PROFESSION_NAME },
         completedMeetings: {
-            name: 'Встретился, раз',
+            name: 'Meetings, count',
             path: COMPLETED_MEETINGS
         },
-        rate: { name: 'Оценка', path: RATE },
+        rate: { name: 'Rate', path: RATE },
         bookmark: {
-            name: 'Избранное',
+            name: 'Bookmark',
             path: BOOKMARK,
             component: (data) => (
                 <Bookmark
@@ -54,7 +54,7 @@ const UsersTable = ({
             name: '',
             component: (data) => (
                 <Button
-                    value={'Удалить'}
+                    value={'Delete'}
                     onClick={() => deleteUser(data)}
                     className="btn btn-danger"
                 />

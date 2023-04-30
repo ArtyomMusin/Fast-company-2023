@@ -106,7 +106,14 @@ const RegisterForm = () => {
     }
 
     const handlerMultiSelect = (items) => {
-        const value = items.map((item) => allQualities[Object.keys(allQualities).find((quality) => allQualities[quality]._id === item.value)])
+        const value = items.map(
+            (item) =>
+                allQualities[
+                    Object.keys(allQualities).find(
+                        (quality) => allQualities[quality]._id === item.value
+                    )
+                ]
+        )
         handleChangeField({ qualities: value })
     }
 
@@ -131,7 +138,7 @@ const RegisterForm = () => {
             />
             <Select
                 data={professions}
-                defaultValue={profession}
+                value={profession}
                 label={'Выберите профессию'}
                 name={'profession'}
                 onChange={handleChangeField}
