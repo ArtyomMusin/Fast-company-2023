@@ -16,7 +16,7 @@ const Users = () => {
         }
 
         if (users3 === EDIT) {
-            return <UserConfig id={userId}/>
+            return <UserConfig id={userId} />
         }
 
         return <UserPage id={userId} />

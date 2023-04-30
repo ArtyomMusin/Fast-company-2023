@@ -27,7 +27,10 @@ const TableBody = ({ data, columns, messageForEmptyTable }) => {
                 ))
             ) : (
                 <tr>
-                    <td colSpan={Object.keys(columns).length} style={{ textAlign: 'center' }}>
+                    <td
+                        colSpan={Object.keys(columns).length}
+                        style={{ textAlign: 'center' }}
+                    >
                         {messageForEmptyTable}
                     </td>
                 </tr>
